@@ -31,4 +31,22 @@ APIAuthenticatedClient.interceptors.request.use((config) => {
     return Promise.reject(error);
 });
 
-export { apiClient, APIAuthenticatedClient };
+// Payment gateway helper — call this to initiate payment, then redirect to the returned URL
+const initiatePayment = async ({ amount, productId, productName, paymentGateway, customerName, customerEmail, customerPhone }) => {
+    const response = await APIAuthenticatedClient.post('/payments/initiate-payment', {
+        amount,
+        productId,
+        productName,
+        paymentGateway,    // "esewa" or "khalti"
+        customerName,
+        customerEmail,
+        customerPhone,
+    });
+    // response.data.url contains the gateway redirect URL
+    if (response.data?.url) {
+        window.location.href = response.data.url;
+    }
+    return response.data;
+};
+
+export { apiClient, APIAuthenticatedClient, initiatePayment };

@@ -1,11 +1,11 @@
 const express = require("express");
 const { initiatePayment, paymentStatus } = require("../controller/paymentController");
-const Transaction = require("../model/paymentModel");
+const { asyncError } = require("../services/asyncErrro");
 
 const router = express.Router();
 
-router.post("/initiate-payment", initiatePayment);
+router.post("/initiate-payment", asyncError(initiatePayment));
 
-router.post("/payment-status", paymentStatus);
+router.post("/payment-status", asyncError(paymentStatus));
 
 module.exports = router;

@@ -64,10 +64,41 @@ const getJobById = async (req, res) => {
     });
 }
 
+const deleteJob = async (req, res) => {
+    const jobId = req.params.id;
+    const userId = req.user.id;
+
+    const job = await Job.findByPk(jobId);
+
+    if (!job) {
+        return res.status(404).json({
+            message: "Job not found"
+        });
+    }
+
+    // Check if the job belongs to the user
+    if (job.userId !== userId) {
+        return res.status(403).json({
+            message: "You can only delete your own jobs"
+        });
+    }
+
+    await Job.destroy({
+        where: {
+            id: jobId
+        }
+    });
+
+    res.status(200).json({
+        message: "Job deleted successfully"
+    });
+}
+
 
 module.exports = {
     createJob,
     getAllJobs,
-    getJobById
+    getJobById,
+    deleteJob
 
 }

@@ -24,11 +24,41 @@ if(req.user.userRole=="jobProvider"){
 
 
 const getApplications=async (req,res)=>{
-    const applications= await Application.findAll();
+    const userId=req.user.id;
+    const Job = require("../model/JobModel");
+    const User = require("../model/UserModel");
+    
+    // Get all jobs posted by this provider
+    const jobs = await Job.findAll({
+        where: {
+            userId: userId
+        }
+    });
+
+    if(!jobs || jobs.length === 0){
+        return res.status(200).json({
+            message:"No jobs found",
+            applications: []
+        })
+    }
+
+    const jobIds = jobs.map(job => job.id);
+    
+    // Get applications for these jobs
+    const applications= await Application.findAll({
+        where: {
+            jobId: jobIds
+        },
+        include: [{
+            model: User,
+            attributes: ['id', 'firstName', 'lastName', 'email']
+        }]
+    });
     
     if(!applications){
-        return res.status(404).json({
-            message:"No applications found"
+        return res.status(200).json({
+            message:"No applications found",
+            applications: []
         })
     }
 
@@ -68,9 +98,11 @@ const updateApplicationStatus=async (req,res)=>{
 
 
 const deleteApplication=async (req,res)=>{
-    const {applicationId}=req.params;
+    const {id}=req.params;
+    const userId=req.user.id;
+    const userRole=req.user.userRole;
     
-    const application= await Application.findByPk(applicationId);
+    const application= await Application.findByPk(id);
 
     if(!application){
         return res.status(404).json({
@@ -78,15 +110,31 @@ const deleteApplication=async (req,res)=>{
         })
     }
 
-  const deleteApplication=  await Application.destroy({
+    // Allow deletion by job seeker (own application) or job provider (application to their job)
+    if(userRole === "jobSeeker" && application.userId !== userId){
+        return res.status(403).json({
+            message:"You can only delete your own applications"
+        })
+    }
+
+    if(userRole === "jobProvider"){
+        const Job = require("../model/JobModel");
+        const job = await Job.findByPk(application.jobId);
+        if(!job || job.userId !== userId){
+            return res.status(403).json({
+                message:"You can only remove applications from your own jobs"
+            })
+        }
+    }
+
+    await Application.destroy({
         where:{
-            id:applicationId
+            id:id
         }
     })
 
     return res.status(200).json({
-        message:"Application deleted successfully",
-        deleteApplication
+        message:"Application deleted successfully"
     })
 }
 
@@ -96,7 +144,11 @@ const myApplications=async (req,res)=>{
     const applications= await Application.findAll({
         where:{
             userId:userId
-        }
+        },
+        include: [{
+            model: require("../model/JobModel"),
+            attributes: ['id', 'jobTitle', 'jobCompany', 'jobLocation', 'jobSalary']
+        }]
     })
 
     return res.status(200).json({

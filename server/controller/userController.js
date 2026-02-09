@@ -7,7 +7,7 @@ const registerUser = async (req, res) => {
     // taking data from req body
 
     
-    const { username, userEmail, userPassword } = req.body
+    const { username, userEmail, userPassword, userRole } = req.body
 
     if (!username || !userEmail || !userPassword) {
         return res.status(400).json({
@@ -25,10 +25,11 @@ const registerUser = async (req, res) => {
     }
 
     // Create user
-    User.create({
+    await User.create({
         username,
         userEmail,
-        userPassword: bcrypt.hashSync(userPassword, 10) // hashing password
+        userPassword: bcrypt.hashSync(userPassword, 10),
+        userRole: userRole || "jobSeeker"
     })
     return res.status(201).json({
         message: "User registered successfully"
@@ -73,7 +74,8 @@ const loginUser = async (req, res) => {
         user: {
             id: isExistingUser.id,
             username: isExistingUser.username,
-            userEmail: isExistingUser.userEmail
+            userEmail: isExistingUser.userEmail,
+            userRole: isExistingUser.userRole
         }
     })
 }

@@ -1,8 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { apiClient } from "../api";
-import { use } from "react";
-
-
+import { toast } from "react-toastify";
 
 const STATUS = {
     IDLE: "idle",
@@ -13,11 +11,11 @@ const STATUS = {
 const authSlice = createSlice({
     name: "auth",
     initialState: {
-        isAuthenticated: false,
-        data: JSON.parse(localStorage.getItem("user")) || [],             
+        isAuthenticated: !!localStorage.getItem("token"),
+        data: JSON.parse(localStorage.getItem("user")) || null,             
         loading: STATUS.IDLE,
-        token:"",
-        error:null
+        token: localStorage.getItem("token") || "",
+        error: null
     },
     reducers:{
         setAuthenticated(state, action){
@@ -34,7 +32,7 @@ const authSlice = createSlice({
         state.loading = action.payload;
       },
 
-      setError(state,action){
+      setError(state, action){
         state.error = action.payload;
       },
 
@@ -42,93 +40,89 @@ const authSlice = createSlice({
         state.token = action.payload;
       },
 
-    
-
-
       logoutUser(state){
         state.isAuthenticated = false;
-        state.data = [];
+        state.data = null;
         state.token = "";
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        toast.success("Logged out successfully");
       }
-
-
     }
 })
 
-
-export const {setAuthenticated, setData, setLoading, setError, setToken,  logoutUser} = authSlice.actions;
+export const { setAuthenticated, setData, setLoading, setError, setToken, logoutUser } = authSlice.actions;
 
 export default authSlice.reducer;
 
-export function registerUser(userData){
-    console.log("register called", userData);
-    return async function registerUserThunk(dispatch){
+export function registerUser(userData) {
+    return async function registerUserThunk(dispatch) {
         dispatch(setLoading(STATUS.LOADING));
 
-     if(!userData.userEmail || !userData.userPassword || !userData.username){
-        dispatch(setError("All fields are required"));
-        dispatch(setLoading(STATUS.ERROR));
-        alert("All fields are required");
-        return;
-     }
-
-     try{
-      
-        const response = await apiClient.post("/auth/register",userData)
-
-         console.log("hello")
-
-        console.log("Registration response:", response);
-
-        if(response.status === 201){
-            dispatch(setData(response.data))
-
-
-            alert("Registration successful! Please login.");
-        }else{
-            dispatch (setError("Registration failed"));
+        if (!userData.userEmail || !userData.userPassword || !userData.username) {
+            dispatch(setError("All fields are required"));
             dispatch(setLoading(STATUS.ERROR));
+            toast.error("All fields are required");
+            return { success: false };
         }
-    }catch(error){
-        dispatch(setError(error.response?.data?.message || "Something went wrong"));
-        dispatch(setLoading(STATUS.ERROR));
-    }
+
+        try {
+            const response = await apiClient.post("/auth/register", userData);
+
+            if (response.status === 201) {
+                dispatch(setLoading(STATUS.IDLE));
+                toast.success("Registration successful! Please login.");
+                return { success: true };
+            } else {
+                dispatch(setError("Registration failed"));
+                dispatch(setLoading(STATUS.ERROR));
+                toast.error("Registration failed");
+                return { success: false };
+            }
+        } catch (error) {
+            const msg = error.response?.data?.message || "Something went wrong";
+            dispatch(setError(msg));
+            dispatch(setLoading(STATUS.ERROR));
+            toast.error(msg);
+            return { success: false };
+        }
     }
 }
 
-//login user thunk
-export function loginUser(userData){
-    return async function loginUserThunk(dispatch){
+export function loginUser(userData) {
+    return async function loginUserThunk(dispatch) {
         dispatch(setLoading(STATUS.LOADING));
-        alert("Login function called");
 
-     if(!userData.userEmail || !userData.userPassword){
-        alert("Email and Password are required");
-        dispatch(setError("Email and Password are required"));
-        dispatch(setLoading(STATUS.ERROR));
-        return;
-     }
-
-     try{
-        alert("Sending login request");
-          const response = await apiClient.post("/auth/login",userData)
-        alert("Login request sent");
-        console.log("Login response:", response);
-        if(response.status === 200){
-            alert("Login successful!");
-            dispatch(setData(response.data.user))
-            dispatch(setToken(response.data.token))
-            dispatch(setAuthenticated(true))
-            localStorage.setItem("token", response.data.token);
-        }else{
-            alert("Login failed! Please check your credentials.");
-            dispatch (setError("Login failed"));
+        if (!userData.userEmail || !userData.userPassword) {
+            dispatch(setError("Email and Password are required"));
             dispatch(setLoading(STATUS.ERROR));
+            toast.error("Email and Password are required");
+            return { success: false };
         }
-    }catch(error){
-        dispatch(setError(error.response?.data?.message || "Something went wrong"));
-        dispatch(setLoading(STATUS.ERROR));
-    }
+
+        try {
+            const response = await apiClient.post("/auth/login", userData);
+
+            if (response.status === 200) {
+                dispatch(setData(response.data.user));
+                dispatch(setToken(response.data.token));
+                dispatch(setAuthenticated(true));
+                localStorage.setItem("token", response.data.token);
+                dispatch(setLoading(STATUS.IDLE));
+                toast.success("Login successful!");
+                return { success: true, userRole: response.data.user.userRole };
+            } else {
+                dispatch(setError("Login failed"));
+                dispatch(setLoading(STATUS.ERROR));
+                toast.error("Login failed! Please check your credentials.");
+                return { success: false };
+            }
+        } catch (error) {
+            const msg = error.response?.data?.message || "Something went wrong";
+            dispatch(setError(msg));
+            dispatch(setLoading(STATUS.ERROR));
+            toast.error(msg);
+            return { success: false };
+        }
     }   
 }

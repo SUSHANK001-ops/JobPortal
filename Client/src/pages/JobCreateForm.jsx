@@ -1,6 +1,7 @@
 import React from 'react'
-import { APIAuthenticatedClient } from '../api';
-import { useNavigate } from 'react-router-dom';
+import { APIAuthenticatedClient } from '../api'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 const JobCreateForm = () => {
 
     const [compnayName, setCompanyName] = React.useState('');
@@ -8,12 +9,14 @@ const JobCreateForm = () => {
     const [jobDescription, setJobDescription] = React.useState('');
     const [jobLocation, setJobLocation] = React.useState('');
     const [jobSalary, setJobSalary] = React.useState('');
+    const [isLoading, setIsLoading] = React.useState(false);
     const navigate = useNavigate();
   
   const handleSubmit = async(e) => {
     e.preventDefault();
     
     try {
+      setIsLoading(true);
       const jobData = {
         jobCompany: compnayName,
         jobTitle: jobTitle,
@@ -26,13 +29,14 @@ const JobCreateForm = () => {
       console.log("Job creation response:", response);
       
       if(response.status === 201){
-        alert("Job created successfully");
-        navigate("/");
+        toast.success("Job created successfully!");
+        navigate("/job-provider-dashboard");
 
       }
     } catch(error) {
       console.error("Error creating job:", error);
-      alert(error.response?.data?.message || "Failed to create job. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to create job. Please try again.");
+      setIsLoading(false);
     }
   }
 
@@ -68,8 +72,15 @@ const JobCreateForm = () => {
         <input value={jobSalary} onChange={(e) => setJobSalary(e.target.value)} type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500" placeholder={80000} />
       </div>
       {/* Submit */}
-      <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">
-        Create Job
+      <button type="submit" disabled={isLoading} className="w-full bg-linear-to-r from-[#132440] to-[#BF092F] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        {isLoading ? (
+          <>
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            Creating Job...
+          </>
+        ) : (
+          'Create Job'
+        )}
       </button>
     </form>
   </div>

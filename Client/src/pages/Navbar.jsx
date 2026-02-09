@@ -58,11 +58,11 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="w-9 h-9 bg-linear-to-br from-[#132440] to-[#BF092F] rounded-xl flex items-center justify-center shadow-lg transition-shadow">
-              <span className="text-white font-bold text-sm">JP</span>
+              <span className="text-white font-bold text-sm">SJ</span>
             </div>
             <span className="text-xl font-bold">
-              <span className="text-blue-600">Job</span>
-              <span className="text-red-500">Portal</span>
+              <span className="text-blue-600">Sen</span>
+              <span className="text-red-500">Jobs</span>
             </span>
           </Link>
 

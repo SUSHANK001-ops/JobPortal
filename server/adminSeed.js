@@ -25,7 +25,7 @@ const seedAdminUser = async () => {
 
     // Create admin user
     await User.create({
-        username: "bishalrijal",
+        username: "Sushank",
         userEmail: adminEmail,
         userPassword: bcrypt.hashSync(adminPassword, 10),
         userRole: "jobProvider"

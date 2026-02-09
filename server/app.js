@@ -15,22 +15,18 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-
 // app.use(express.urlencoded({ extended: true }))
-
-
-
-
 
 // Db connection
 const { connectDB } = require('./database/dbConfig');
 
 const seedAdminUser = require('./adminSeed');
 
+
 // Initialize database and seed admin user
 const initializeApp = async () => {
     await connectDB();
-    await seedAdminUser();
+    await seedAdminUser(); // Seed admin user
 }
 
 initializeApp().catch(err => {

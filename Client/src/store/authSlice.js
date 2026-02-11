@@ -71,7 +71,7 @@ export function registerUser(userData) {
 
             if (response.status === 201) {
                 dispatch(setLoading(STATUS.IDLE));
-                toast.success("Registration successful! Please login.");
+                toast.success(response.data?.message || "Registration successful! Please verify your email.");
                 return { success: true };
             } else {
                 dispatch(setError("Registration failed"));

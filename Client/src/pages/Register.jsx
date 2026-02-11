@@ -28,7 +28,7 @@ const Register = () => {
     setSubmitting(false)
 
     if (result?.success) {
-      navigate('/login')
+      navigate('/verify-email', { state: { email } })
     }
   }
 

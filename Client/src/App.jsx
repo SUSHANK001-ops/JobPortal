@@ -17,6 +17,10 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentFailure from './pages/PaymentFailure'
 import PaymentForm from './pages/PaymentForm'
 
+import ResetPassword from './pages/ResetPassword'
+import ForgotPassword from './pages/ForgotPassword'
+import VerifyEmail from './pages/VerifyEmail'
+
 // Protected route wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { isAuthenticated, data } = useSelector((state) => state.auth)
@@ -53,6 +57,9 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/register" element={<GuestRoute><Register /></GuestRoute>} />
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
+          <Route path="/forgot-password" element={<GuestRoute><ForgotPassword /></GuestRoute>} />
+          <Route path="/reset-password" element={<GuestRoute><ResetPassword /></GuestRoute>} />
+          <Route path="/verify-email" element={<GuestRoute><VerifyEmail /></GuestRoute>} />
           <Route
             path="/job-provider-dashboard"
             element={

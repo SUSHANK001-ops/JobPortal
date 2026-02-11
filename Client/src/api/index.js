@@ -49,4 +49,20 @@ const initiatePayment = async ({ amount, productId, productName, paymentGateway,
     return response.data;
 };
 
+// User password reset helpers
+export const forgotPassword = async (email) => {
+    const response = await apiClient.post('/auth/forgot-password', { email });
+    return response.data;
+};
+
+export const verifyOtp = async (email, otp) => {
+    const response = await apiClient.post('/auth/verify-otp', { email, otp });
+    return response.data;
+};
+
+export const resetPassword = async (email, newPassword, confirmPassword) => {
+    const response = await apiClient.post('/auth/reset-password', { email, newPassword, confirmPassword });
+    return response.data;
+};
+
 export { apiClient, APIAuthenticatedClient, initiatePayment };
